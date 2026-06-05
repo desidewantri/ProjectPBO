@@ -4,7 +4,6 @@ CXXFLAGS := -std=c++17 -Wall -Wextra -Wpedantic -I src
 SRC_DIR  := src
 OBJ_DIR  := build
 
-# All .cpp sources (exclude seed.cpp and future main files)
 CORE_SRCS := \
     $(SRC_DIR)/models/User.cpp \
     $(SRC_DIR)/models/Admin.cpp \
@@ -17,28 +16,45 @@ CORE_SRCS := \
 
 CORE_OBJS := $(patsubst $(SRC_DIR)/%.cpp, $(OBJ_DIR)/%.o, $(CORE_SRCS))
 
-# ─── Targets ──────────────────────────────────────────────────────
-.PHONY: all seed clean dirs
+ifeq ($(OS),Windows_NT)
+    LDFLAGS_WEB := -lws2_32
+else
+    LDFLAGS_WEB :=
+endif
 
-all: seed
+.PHONY: all seed admin web clean dirs
+
+all: seed admin web
 
 dirs:
 	@mkdir -p $(OBJ_DIR)/models $(OBJ_DIR)/repository data
 
-# Build seed binary
 seed: dirs $(CORE_OBJS) $(OBJ_DIR)/seed.o
 	$(CXX) $(CXXFLAGS) -o seed $(CORE_OBJS) $(OBJ_DIR)/seed.o
 	@echo "\n✓ Built: ./seed"
 
-# Pattern rule for core objects
+admin: dirs $(CORE_OBJS) $(OBJ_DIR)/admin.o
+	$(CXX) $(CXXFLAGS) -o admin $(CORE_OBJS) $(OBJ_DIR)/admin.o
+	@echo "\n✓ Built: ./admin"
+
+web: dirs $(CORE_OBJS) $(OBJ_DIR)/web.o
+	$(CXX) $(CXXFLAGS) -o web $(CORE_OBJS) $(OBJ_DIR)/web.o $(LDFLAGS_WEB)
+	@echo "\n✓ Built: ./web"
+
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 $(OBJ_DIR)/seed.o: $(SRC_DIR)/seed.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
+$(OBJ_DIR)/admin.o: $(SRC_DIR)/admin.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+$(OBJ_DIR)/web.o: $(SRC_DIR)/web.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
 clean:
-	rm -rf $(OBJ_DIR) seed admin
+	rm -rf $(OBJ_DIR) seed admin web seed.exe admin.exe web.exe
 	@echo "Cleaned build artifacts."
 
 clean-data:
