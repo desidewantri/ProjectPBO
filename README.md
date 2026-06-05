@@ -158,7 +158,8 @@ make web     # build web server
 
 ### Admin CLI
 ![CLI Login](screenshots/cli_login.png)
-<img width="1092" height="265" alt="SS_CLI_LoginAdmin" src="https://github.com/user-attachments/assets/562719e6-285c-494a-82a7-f16f21af26e3" />
+<img width="1087" height="270" alt="SS_CLI_LoginAdmin" src="https://github.com/user-attachments/assets/13ca7767-de0f-4ce4-8b31-efde9ea55d03" />
+
 
 ![CLI Buku](screenshots/cli_books.png)
 <img width="966" height="1025" alt="SS_CLI_KelolaBuku" src="https://github.com/user-attachments/assets/57fb9ac0-920d-486b-8d5b-5c17386108b1" />
