@@ -48,7 +48,8 @@ ProjectPBO/
 
 ## UML Class Diagram
 
-![UML Diagram](uml.png)
+
+<img width="1160" height="784" alt="UML_CLASS DIAGRAM" src="https://github.com/user-attachments/assets/7861e64d-d161-48aa-ab86-38ec84bce331" />
 
 ---
 
@@ -57,7 +58,7 @@ ProjectPBO/
 > Pastikan sudah install **MSYS2 UCRT64** dan **g++** tersedia.
 
 ```bash
-# Install g++ (sekali saja)
+# Install g++ 
 pacman -S mingw-w64-ucrt-x86_64-gcc
 
 # Build semua
