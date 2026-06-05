@@ -1,146 +1,198 @@
-# UGM Library Borrowing System
-**OOP Mini Project — DTETI UGM**  
-**Week 1: Core Engine + Database Layer**
+# UGM Library — Borrowing System in C++
+
+**Nama  :** Desi D Simamora  
+**NIM   :** 23/514990/TK/56564  
 
 ---
 
-## Identitas
-| Field | Value |
-|-------|-------|
-| Nama | *(isi nama)* |
-| NIM | *(isi NIM)* |
-| Kelas | *(isi kelas)* |
+## Deskripsi
 
----
+Sistem peminjaman buku berbasis C++ dengan dua antarmuka:
+- **Admin CLI** (`./admin`) — kelola buku, member, dan peminjaman via terminal
+- **User Web** (`./web`) — pengguna dapat melihat dan meminjam buku via browser
 
-## Cara Build & Menjalankan
-
-### Requirement
-- `g++` dengan dukungan C++17
-- Linux / WSL / macOS
-
-### Build
-```bash
-make          # atau: make seed
-```
-
-### Jalankan Seed (insert data awal)
-```bash
-./seed
-```
-Data akan tersimpan di folder `data/` dan **persists** antar run.
-
-### Reset Data
-```bash
-make clean-data
-./seed        # seed ulang dari awal
-```
-
-### Build dari awal
-```bash
-make clean && make
-```
+Keduanya menggunakan satu **core OOP engine** dan satu **database CSV** yang sama.
 
 ---
 
 ## Struktur Proyek
+
 ```
-borrowing-system/
+ProjectPBO/
 ├── Makefile
 ├── README.md
-├── data/                      ← CSV database (auto-created)
+├── data/                        ← database CSV (auto-generated)
 │   ├── books.csv
 │   ├── members.csv
 │   └── loans.csv
 └── src/
-    ├── seed.cpp               ← Entry point Week 1
+    ├── seed.cpp                 ← isi data awal
+    ├── admin.cpp                ← Admin CLI (Week 2)
+    ├── web.cpp                  ← User Web Server (Week 3)
+    ├── httplib.h                ← library HTTP (cpp-httplib)
+    ├── database/
+    │   └── DbUtils.h            ← helper CSV & tanggal
     ├── models/
-    │   ├── User.h / .cpp      ← Base class (abstract)
-    │   ├── Admin.h / .cpp     ← extends User
-    │   ├── Member.h / .cpp    ← extends User
-    │   ├── Book.h / .cpp
-    │   └── Loan.h / .cpp
-    ├── repository/
-    │   ├── BookRepository.h / .cpp
-    │   ├── MemberRepository.h / .cpp
-    │   └── LoanRepository.h / .cpp
-    └── database/
-        └── DbUtils.h          ← CSV helpers, date utilities
+    │   ├── User.h / User.cpp    ← base class
+    │   ├── Admin.h / Admin.cpp  ← extends User
+    │   ├── Member.h / Member.cpp← extends User
+    │   ├── Book.h / Book.cpp    ← entitas buku
+    │   └── Loan.h / Loan.cpp    ← entitas peminjaman
+    └── repository/
+        ├── BookRepository.h/cpp
+        ├── MemberRepository.h/cpp
+        └── LoanRepository.h/cpp
 ```
 
 ---
 
 ## UML Class Diagram
 
-*(Lihat file `uml.png` atau diagram draw.io)*
-
-Ringkasan relasi:
-- `User` ← `Admin`, `Member` (Inheritance)
-- `Admin` uses `BookRepository`, `MemberRepository`
-- `Member` uses `LoanRepository`
-- `Loan` has-a `Book` (via bookId) dan `Member` (via memberId)
-- Setiap Repository manage satu tipe entitas ke CSV
+![UML Diagram](uml.png)
 
 ---
 
-## Database Schema
+## Cara Build
 
-**Path B — CSV Files** (dipilih untuk simplisitas dan kemudahan debug)
+> Pastikan sudah install **MSYS2 UCRT64** dan **g++** tersedia.
 
-### `data/books.csv`
-| Kolom | Tipe | Keterangan |
+```bash
+# Install g++ (sekali saja)
+pacman -S mingw-w64-ucrt-x86_64-gcc
+
+# Build semua
+make all
+
+# Atau build satu per satu
+make seed    # build seeder
+make admin   # build CLI
+make web     # build web server
+```
+
+---
+
+## Cara Menjalankan
+
+### 1. Isi data awal (wajib dijalankan sekali)
+```bash
+./seed
+```
+
+### 2. Admin CLI
+```bash
+./admin
+```
+- Login: username `admin`, password `admin123`
+- Fitur: kelola buku, kelola member, kelola peminjaman
+
+### 3. Web Server
+```bash
+./web
+```
+- Buka browser: `http://localhost:8080`
+- Fitur: lihat buku, cari buku, pinjam, kembalikan, lihat pinjaman saya
+
+> **Catatan:** `./admin` dan `./web` dapat dijalankan bersamaan. Data yang diubah di CLI langsung terlihat di web, dan sebaliknya.
+
+---
+
+## Routes Web
+
+| Method | Route | Fungsi |
+|--------|-------|--------|
+| GET | `/` | Landing page, daftar semua buku |
+| GET | `/search?q=...` | Pencarian buku by judul/pengarang |
+| POST | `/borrow` | Pinjam buku (memberId + bookId) |
+| POST | `/return` | Kembalikan buku (loanId) |
+| GET | `/me?id=...` | Lihat pinjaman aktif member |
+
+---
+
+## Schema Database (CSV)
+
+### books.csv
+| Field | Tipe | Keterangan |
 |-------|------|-----------|
-| id | int | Primary key, auto-increment |
+| id | int | Primary key |
 | title | string | Judul buku |
-| author | string | Nama pengarang |
-| available | 0/1 | 1 = tersedia, 0 = dipinjam |
+| author | string | Pengarang |
+| available | bool | 1=tersedia, 0=dipinjam |
 
-### `data/members.csv`
-| Kolom | Tipe | Keterangan |
+### members.csv
+| Field | Tipe | Keterangan |
 |-------|------|-----------|
-| memberId | int | Primary key |
+| id | int | Primary key |
 | name | string | Nama lengkap |
-| email | string | Email UGM |
-| username | string | Login username |
-| passwordHash | string | Hash dari password |
+| email | string | Email |
+| username | string | Username login |
+| passwordHash | string | Hash password |
 
-### `data/loans.csv`
-| Kolom | Tipe | Keterangan |
+### loans.csv
+| Field | Tipe | Keterangan |
 |-------|------|-----------|
 | loanId | int | Primary key |
-| bookId | int | FK → books.id |
-| memberId | int | FK → members.memberId |
-| borrowDate | YYYY-MM-DD | Tanggal pinjam |
-| dueDate | YYYY-MM-DD | Batas kembali |
-| returned | 0/1 | 1 = sudah dikembalikan |
+| bookId | int | Foreign key → books |
+| memberId | int | Foreign key → members |
+| borrowDate | string | Tanggal pinjam (YYYY-MM-DD) |
+| dueDate | string | Batas kembali (YYYY-MM-DD) |
+| returned | bool | 1=sudah kembali, 0=belum |
 
 ---
 
-## Konsep OOP yang Digunakan
+## Konsep OOP yang Diimplementasikan
 
-| Konsep | Lokasi | Keterangan |
-|--------|--------|-----------|
-| **Encapsulation** | Semua model | Semua field `private`, akses via getter/setter |
-| **Inheritance** | `Admin`, `Member` extends `User` | `role()` sebagai virtual method |
-| **Polymorphism** | `User::role()` pure virtual | Override di Admin dan Member |
-| **Operator Overloading** | `Book::operator==`, `Loan::operator==`, `User::operator==`, `operator<<` | Perbandingan dan stream output |
-| **Composition** | `Loan` has bookId + memberId | Loan menghubungkan Book dan Member |
-| **STL Containers** | `std::vector<Book>`, dll | Semua listAll() mengembalikan vector |
-| **RAII** | Repository constructors | File dibuat otomatis bila belum ada |
-| **std::optional** | `findById()` | Return type aman, tidak nullptr |
-
----
-
-## Keterbatasan (Known Limitations)
-
-- Password menggunakan `std::hash` sederhana, bukan SHA-256 (Week 3 bonus)
-- CSV tidak mendukung field yang mengandung newline
-- Tidak ada concurrent access protection
-- `isOverdue()` di `Loan` bergantung pada sistem waktu lokal
+| Konsep | Implementasi |
+|--------|-------------|
+| **Encapsulation** | Semua field private, akses via getter/setter |
+| **Inheritance** | `Admin` dan `Member` extends `User` |
+| **Polymorphism** | `role()` virtual di `User`, di-override di `Admin` dan `Member` |
+| **Composition** | `Loan` memiliki referensi ke `Book` dan `Member` |
+| **Operator Overloading** | `operator==` dan `operator<<` di `Book`, `Loan`, `User` |
+| **STL Containers** | `std::vector`, `std::optional` di Repository |
+| **File I/O** | `<fstream>` untuk baca/tulis CSV |
+| **Separation of Concerns** | Model / Repository / CLI / Web terpisah |
 
 ---
 
-## Rencana Week 2 & 3
+## Screenshots
 
-- **Week 2:** Admin CLI — login, menu CRUD buku & member, alur loan
-- **Week 3:** Web server dengan `cpp-httplib` pada port 8080
+### Admin CLI
+![CLI Login](screenshots/cli_login.png)
+![CLI Buku](screenshots/cli_books.png)
+![CLI Pinjaman](screenshots/cli_loans.png)
+
+### User Web
+![Web Beranda](screenshots/web_home.png)
+![Web Pencarian](screenshots/web_search.png)
+![Web Pinjaman Saya](screenshots/web_me.png)
+
+---
+
+## Known Limitations
+
+- Password admin hardcoded (`admin123`), belum disimpan di database
+- Tidak ada fitur registrasi member via web (hanya via CLI admin)
+- CSV tidak thread-safe jika diakses bersamaan oleh banyak user
+- Tidak ada pagination pada daftar buku yang panjang
+- Belum ada fitur perpanjangan (renew) pinjaman
+
+---
+
+## Tools & Libraries
+
+| Layer | Tool |
+|-------|------|
+| Language | C++17 (g++) |
+| Build | Makefile |
+| HTTP Server | [cpp-httplib](https://github.com/yhirose/cpp-httplib) |
+| Database | CSV (pure `<fstream>`) |
+| Version Control | Git + GitHub |
+
+---
+
+## Academic Integrity
+
+Proyek ini dikerjakan secara individu. Referensi yang digunakan:
+- [cppreference.com](https://cppreference.com) — dokumentasi C++ STL
+- [cpp-httplib documentation](https://github.com/yhirose/cpp-httplib)
+- AI assistant (Claude) — untuk sintaks dan debugging
