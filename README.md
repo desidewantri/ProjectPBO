@@ -58,7 +58,7 @@ ProjectPBO/
 > Pastikan sudah install **MSYS2 UCRT64** dan **g++** tersedia.
 
 ```bash
-# Install g++ (sekali saja)
+# Install g++ 
 pacman -S mingw-w64-ucrt-x86_64-gcc
 
 # Build semua
