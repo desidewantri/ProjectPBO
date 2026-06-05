@@ -158,13 +158,23 @@ make web     # build web server
 
 ### Admin CLI
 ![CLI Login](screenshots/cli_login.png)
+<img width="1092" height="265" alt="SS_CLI_LoginAdmin" src="https://github.com/user-attachments/assets/562719e6-285c-494a-82a7-f16f21af26e3" />
+
 ![CLI Buku](screenshots/cli_books.png)
+<img width="966" height="1025" alt="SS_CLI_KelolaBuku" src="https://github.com/user-attachments/assets/57fb9ac0-920d-486b-8d5b-5c17386108b1" />
+
 ![CLI Pinjaman](screenshots/cli_loans.png)
+<img width="962" height="1087" alt="SS_CLI_KelolaPeminjaman" src="https://github.com/user-attachments/assets/390b4567-d2a1-4b55-875b-ac25a72bbf58" />
 
 ### User Web
 ![Web Beranda](screenshots/web_home.png)
+<img width="1918" height="1080" alt="SS_WEB_Beranda" src="https://github.com/user-attachments/assets/c68c4343-e742-4aac-a448-a1157c1c06a4" />
+
 ![Web Pencarian](screenshots/web_search.png)
+<img width="1915" height="1067" alt="SS_WEB_Pencarian" src="https://github.com/user-attachments/assets/5b9a2918-ef8b-4272-b538-bd7192382ad4" />
+
 ![Web Pinjaman Saya](screenshots/web_me.png)
+<img width="1918" height="1077" alt="SS_WEB_PinjamanSaya" src="https://github.com/user-attachments/assets/ed34d959-a4be-4a8c-9d15-fed88a6268b1" />
 
 ---
 
