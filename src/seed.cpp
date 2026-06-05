@@ -1,3 +1,7 @@
+// seed.cpp — Script untuk mengisi data awal ke database CSV
+// Jalankan sekali sebelum menggunakan admin atau web
+// Jika data sudah ada, script ini akan skip tanpa mengubah data
+
 #include <iostream>
 #include <iomanip>
 #include <string>
@@ -33,7 +37,7 @@ int main() {
     MemberRepository memberRepo("data/members.csv");
     LoanRepository   loanRepo("data/loans.csv");
 
-    // ─── SEED BOOKS (10 records) ──────────────────────────────────
+    //SEED BOOKS (10 records) 
     printSeparator("Seeding Books");
 
     if (bookRepo.listAll().empty()) {
@@ -60,7 +64,7 @@ int main() {
         std::cout << "  Books already seeded, skipping.\n";
     }
 
-    // ─── SEED MEMBERS (5 records) ─────────────────────────────────
+    // SEED MEMBERS (5 records)
     printSeparator("Seeding Members");
 
     if (memberRepo.listAll().empty()) {
@@ -83,7 +87,7 @@ int main() {
         std::cout << "  Members already seeded, skipping.\n";
     }
 
-    // ─── SEED LOANS (3 sample loans) ─────────────────────────────
+    // SEED LOANS (3 sample loans)
     printSeparator("Seeding Loans");
 
     if (loanRepo.listAll().empty()) {
@@ -118,7 +122,7 @@ int main() {
         std::cout << "  Loans already seeded, skipping.\n";
     }
 
-    // ─── VERIFICATION ─────────────────────────────────────────────
+    // Tampilkan ringkasan data yang tersimpan untuk verifikasi
     printSeparator("Verification — All Books");
     std::cout << std::left
               << std::setw(4)  << "ID"
@@ -152,7 +156,7 @@ int main() {
         std::cout << l << "\n";
     }
 
-    // ─── OOP DEMO ─────────────────────────────────────────────────
+    // Demo konsep OOP yang diimplementasikan dalam proyek ini
     printSeparator("OOP Concepts Demo");
 
     // Polymorphism: User* pointing to Admin

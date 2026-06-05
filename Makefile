@@ -60,3 +60,10 @@ clean:
 clean-data:
 	rm -rf data/
 	@echo "Cleaned data files."
+
+add_books: dirs $(CORE_OBJS) $(OBJ_DIR)/add_books.o
+	$(CXX) $(CXXFLAGS) -o add_books $(CORE_OBJS) $(OBJ_DIR)/add_books.o
+	@echo "\n✓ Built: ./add_books"
+
+$(OBJ_DIR)/add_books.o: $(SRC_DIR)/add_books.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@

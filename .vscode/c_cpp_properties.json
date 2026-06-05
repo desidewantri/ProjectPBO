@@ -5,13 +5,14 @@
       "includePath": [
         "${workspaceFolder}/**"
       ],
+      "defines": [
+        "_DEBUG",
+        "UNICODE"
+      ],
       "compilerPath": "gcc",
       "cStandard": "${default}",
       "cppStandard": "${default}",
-      "intelliSenseMode": "windows-gcc-x64",
-      "compilerArgs": [
-        ""
-      ]
+      "intelliSenseMode": "windows-gcc-x64"
     }
   ],
   "version": 4

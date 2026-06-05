@@ -1,3 +1,9 @@
+// admin.cpp — Admin CLI untuk sistem peminjaman buku UGM Library
+// Week 2: Login, CRUD buku & member, manajemen peminjaman
+//
+// Cara pakai: ./admin
+// Login: username=admin, password=admin123
+
 /**
  * admin.cpp — Admin CLI (Week 2)
  * UGM Library Borrowing System
@@ -23,6 +29,32 @@
 #include "repository/MemberRepository.h"
 #include "repository/LoanRepository.h"
 #include "database/DbUtils.h"
+
+// ── ANSI Color Codes (bonus: coloured CLI output) ───────────────────────────
+#ifdef _WIN32
+#  include <windows.h>
+// Enable ANSI on Windows terminal
+static bool enableAnsi() {
+    HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
+    DWORD mode = 0;
+    GetConsoleMode(h, &mode);
+    SetConsoleMode(h, mode | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
+    return true;
+}
+static bool _ansiEnabled = enableAnsi();
+#endif
+
+namespace Color {
+    const std::string RESET   = "\033[0m";
+    const std::string BOLD    = "\033[1m";
+    const std::string RED     = "\033[31m";
+    const std::string GREEN   = "\033[32m";
+    const std::string YELLOW  = "\033[33m";
+    const std::string BLUE    = "\033[34m";
+    const std::string CYAN    = "\033[36m";
+    const std::string WHITE   = "\033[37m";
+    const std::string BG_RED  = "\033[41m";
+}
 
 // ── Terminal helpers ────────────────────────────────────────────────────────
 
@@ -72,7 +104,7 @@ static std::string readPassword() {
 }
 #endif
 
-// ── Print helpers ────────────────────────────────────────────────────────────
+// Print helpers 
 
 static void printSep(char ch = '-', int w = 72) {
     std::cout << std::string(w, ch) << '\n';
@@ -81,7 +113,7 @@ static void printSep(char ch = '-', int w = 72) {
 static void printHeader(const std::string& title) {
     std::cout << '\n';
     printSep('=');
-    std::cout << "  " << title << '\n';
+    std::cout << Color::BOLD << Color::CYAN << "  " << title << Color::RESET << '\n';
     printSep('=');
 }
 
@@ -107,7 +139,7 @@ static int readInt(const std::string& prompt) {
     } catch (...) { return -1; }
 }
 
-// ── Tabel buku ───────────────────────────────────────────────────────────────
+// Tabel buku 
 
 static void printBooksTable(const std::vector<Book>& books) {
     if (books.empty()) { std::cout << "  (tidak ada data)\n"; return; }
@@ -122,12 +154,11 @@ static void printBooksTable(const std::vector<Book>& books) {
                   << std::setw(5)  << b.getId()
                   << std::setw(36) << b.getTitle().substr(0, 34)
                   << std::setw(22) << b.getAuthor().substr(0, 20)
-                  << (b.isAvailable() ? "Tersedia" : "Dipinjam") << '\n';
+                  << (b.isAvailable() ? Color::GREEN + "Tersedia" + Color::RESET : Color::YELLOW + "Dipinjam" + Color::RESET) << '\n';
     }
 }
 
-// ── Tabel member ─────────────────────────────────────────────────────────────
-
+//  Tabel member
 static void printMembersTable(const std::vector<Member>& members) {
     if (members.empty()) { std::cout << "  (tidak ada data)\n"; return; }
     std::cout << std::left
@@ -145,7 +176,7 @@ static void printMembersTable(const std::vector<Member>& members) {
     }
 }
 
-// ── Tabel loan ───────────────────────────────────────────────────────────────
+//  Tabel loan 
 
 static void printLoansTable(const std::vector<Loan>& loans,
                              BookRepository& bookRepo,
@@ -166,9 +197,9 @@ static void printLoansTable(const std::vector<Loan>& loans,
         auto member = memberRepo.findById(l.getMemberId());
         std::string title  = book   ? book->getTitle().substr(0, 28)   : "?";
         std::string name   = member ? member->getName().substr(0, 18)  : "?";
-        std::string status = l.isReturned()  ? "Kembali"
-                           : l.isOverdue()   ? "TERLAMBAT"
-                                             : "Aktif";
+        std::string status = l.isReturned()  ? Color::GREEN  + "Kembali"   + Color::RESET
+                           : l.isOverdue()   ? Color::RED    + "TERLAMBAT" + Color::RESET
+                                             : Color::YELLOW + "Aktif"     + Color::RESET;
         std::cout << std::left
                   << std::setw(7)  << l.getLoanId()
                   << std::setw(5)  << l.getBookId()
@@ -181,9 +212,8 @@ static void printLoansTable(const std::vector<Loan>& loans,
     }
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  MENU: Kelola Buku
-// ════════════════════════════════════════════════════════════════════════════
+
 
 static void menuBooks(BookRepository& bookRepo, LoanRepository& loanRepo) {
     while (true) {
@@ -196,7 +226,7 @@ static void menuBooks(BookRepository& bookRepo, LoanRepository& loanRepo) {
         if (choice.empty()) continue;
         char c = std::tolower(choice[0]);
 
-        // ── TAMBAH BUKU ──────────────────────────────────────────────────
+        // TAMBAH BUKU 
         if (c == 'a') {
             printHeader("Tambah Buku Baru");
             std::string title, author;
@@ -206,10 +236,10 @@ static void menuBooks(BookRepository& bookRepo, LoanRepository& loanRepo) {
             int id = bookRepo.nextId();
             Book b(id, title, author, true);
             bookRepo.save(b);
-            std::cout << "  ✓ Buku #" << id << " \"" << title << "\" berhasil ditambahkan.\n";
+            std::cout << Color::GREEN << "  ✓ Buku #" << id << " \"" << title << "\" berhasil ditambahkan." << Color::RESET << '\n';
         }
 
-        // ── EDIT BUKU ────────────────────────────────────────────────────
+        //  EDIT BUKU
         else if (c == 'e') {
             int id = readInt("ID buku yang akan diedit: ");
             if (id <= 0) { std::cout << "  ID tidak valid.\n"; continue; }
@@ -240,10 +270,10 @@ static void menuBooks(BookRepository& bookRepo, LoanRepository& loanRepo) {
                          newAuthor.empty() ? existing.getAuthor() : newAuthor,
                          existing.isAvailable());
             bookRepo.update(updated);
-            std::cout << "  ✓ Buku #" << id << " berhasil diperbarui.\n";
+            std::cout << Color::GREEN << "  ✓ Buku #" << id << " berhasil diperbarui." << Color::RESET << '\n';
         }
 
-        // ── HAPUS BUKU ───────────────────────────────────────────────────
+        //  HAPUS BUKU 
         else if (c == 'd') {
             int id = readInt("ID buku yang akan dihapus: ");
             if (id <= 0) { std::cout << "  ID tidak valid.\n"; continue; }
@@ -258,7 +288,7 @@ static void menuBooks(BookRepository& bookRepo, LoanRepository& loanRepo) {
                 if (l.getBookId() == id) { onLoan = true; break; }
             }
             if (onLoan) {
-                std::cout << "  ✗ Buku #" << id << " sedang dipinjam. Tidak dapat dihapus.\n";
+                std::cout << Color::RED << "  ✗ Buku #" << id << " sedang dipinjam. Tidak dapat dihapus." << Color::RESET << '\n';
                 continue;
             }
 
@@ -267,13 +297,13 @@ static void menuBooks(BookRepository& bookRepo, LoanRepository& loanRepo) {
             std::getline(std::cin, confirm);
             if (!confirm.empty() && std::tolower(confirm[0]) == 'y') {
                 bookRepo.remove(id);
-                std::cout << "  ✓ Buku #" << id << " berhasil dihapus.\n";
+                std::cout << Color::GREEN << "  ✓ Buku #" << id << " berhasil dihapus." << Color::RESET << '\n';
             } else {
                 std::cout << "  Dibatalkan.\n";
             }
         }
 
-        // ── CARI BUKU ────────────────────────────────────────────────────
+        // CARI BUKU 
         else if (c == 's') {
             std::string keyword;
             if (!readLine("Kata kunci: ", keyword)) { std::cout << "  Kata kunci kosong.\n"; continue; }
@@ -287,9 +317,9 @@ static void menuBooks(BookRepository& bookRepo, LoanRepository& loanRepo) {
     }
 }
 
-// ════════════════════════════════════════════════════════════════════════════
+
 //  MENU: Kelola Member
-// ════════════════════════════════════════════════════════════════════════════
+
 
 static std::string simpleHash(const std::string& s) {
     size_t h = 0;
@@ -308,7 +338,7 @@ static void menuMembers(MemberRepository& memberRepo, LoanRepository& loanRepo) 
         if (choice.empty()) continue;
         char c = std::tolower(choice[0]);
 
-        // ── TAMBAH MEMBER ────────────────────────────────────────────────
+        // TAMBAH MEMBER 
         if (c == 'a') {
             printHeader("Tambah Member Baru");
             std::string name, email, username, password;
@@ -321,7 +351,7 @@ static void menuMembers(MemberRepository& memberRepo, LoanRepository& loanRepo) 
             for (const auto& m : memberRepo.listAll()) {
                 if (m.getUsername() == username) { dupUser = true; break; }
             }
-            if (dupUser) { std::cout << "  ✗ Username \"" << username << "\" sudah digunakan.\n"; continue; }
+            if (dupUser) { std::cout << Color::RED << "  ✗ Username \"" << username << "\" sudah digunakan." << Color::RESET << '\n'; continue; }
 
             std::cout << "Password    : ";
             password = readPassword();
@@ -330,10 +360,10 @@ static void menuMembers(MemberRepository& memberRepo, LoanRepository& loanRepo) 
             int id = memberRepo.nextId();
             Member mem(id, name, email, username, simpleHash(password));
             memberRepo.save(mem);
-            std::cout << "  ✓ Member #" << id << " \"" << name << "\" berhasil ditambahkan.\n";
+            std::cout << "  ✓ Member #" << id << " \"" << name << "\" berhasil ditambahkan." << Color::RESET << '\n';
         }
 
-        // ── EDIT MEMBER ──────────────────────────────────────────────────
+        // EDIT MEMBER 
         else if (c == 'e') {
             int id = readInt("ID member yang akan diedit: ");
             if (id <= 0) { std::cout << "  ID tidak valid.\n"; continue; }
@@ -365,10 +395,10 @@ static void menuMembers(MemberRepository& memberRepo, LoanRepository& loanRepo) 
                            existing.getUsername(),
                            existing.getPasswordHash());
             memberRepo.update(updated);
-            std::cout << "  ✓ Member #" << id << " berhasil diperbarui.\n";
+            std::cout << "  ✓ Member #" << id << " berhasil diperbarui." << Color::RESET << '\n';
         }
 
-                // ── HAPUS MEMBER ─────────────────────────────────────────────────
+        // HAPUS MEMBER — cek dulu apakah masih punya pinjaman aktif
         else if (c == 'd') {
             int id = readInt("ID member yang akan dihapus: ");
             if (id <= 0) { std::cout << "  ID tidak valid.\n"; continue; }
@@ -383,7 +413,7 @@ static void menuMembers(MemberRepository& memberRepo, LoanRepository& loanRepo) 
                 if (!l.isReturned()) { hasActive = true; break; }
             }
             if (hasActive) {
-                std::cout << "  ✗ Member #" << id << " masih punya pinjaman aktif. Tidak dapat dihapus.\n";
+                std::cout << Color::RED << "  ✗ Member #" << id << " masih punya pinjaman aktif. Tidak dapat dihapus." << Color::RESET << '\n';
                 continue;
             }
 
@@ -392,7 +422,7 @@ static void menuMembers(MemberRepository& memberRepo, LoanRepository& loanRepo) 
             std::getline(std::cin, confirm);
             if (!confirm.empty() && std::tolower(confirm[0]) == 'y') {
                 memberRepo.remove(id);
-                std::cout << "  ✓ Member #" << id << " berhasil dihapus.\n";
+                std::cout << "  ✓ Member #" << id << " berhasil dihapus." << Color::RESET << '\n';
             } else {
                 std::cout << "  Dibatalkan.\n";
             }
@@ -403,9 +433,8 @@ static void menuMembers(MemberRepository& memberRepo, LoanRepository& loanRepo) 
     }
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  MENU: Kelola Peminjaman
-// ════════════════════════════════════════════════════════════════════════════
+
 
 static void menuLoans(BookRepository& bookRepo,
                       MemberRepository& memberRepo,
@@ -424,14 +453,14 @@ static void menuLoans(BookRepository& bookRepo,
         if (choice.empty()) continue;
         char c = std::tolower(choice[0]);
 
-        // ── LIHAT PINJAMAN AKTIF ─────────────────────────────────────────
+        // LIHAT PINJAMAN AKTIF
         if (c == '1') {
             printHeader("Pinjaman Aktif");
             auto active = loanRepo.findActiveLoans();
             printLoansTable(active, bookRepo, memberRepo);
         }
 
-        // ── LIHAT TERLAMBAT ──────────────────────────────────────────────
+        //LIHAT TERLAMBAT 
         else if (c == '2') {
             printHeader("Pinjaman Terlambat");
             auto overdue = loanRepo.findOverdue();
@@ -440,7 +469,7 @@ static void menuLoans(BookRepository& bookRepo,
                 std::cout << "\n  ⚠  Total terlambat: " << overdue.size() << " item\n";
         }
 
-        // ── PINJAMAN BARU ────────────────────────────────────────────────
+        // PINJAMAN BARU
         else if (c == '3') {
             printHeader("Keluarkan Pinjaman Baru");
 
@@ -455,7 +484,7 @@ static void menuLoans(BookRepository& bookRepo,
             if (!book) { std::cout << "  Buku #" << bookId << " tidak ditemukan.\n"; continue; }
 
             if (!book->isAvailable()) {
-                std::cout << "  ✗ Buku \"" << book->getTitle() << "\" sedang dipinjam orang lain.\n";
+                std::cout << Color::RED << "  ✗ Buku \"" << book->getTitle() << "\" sedang dipinjam orang lain." << Color::RESET << '\n';
                 continue;
             }
 
@@ -478,7 +507,7 @@ static void menuLoans(BookRepository& bookRepo,
                       << "    Batas kembali: " << dueDate << '\n';
         }
 
-        // ── CATAT PENGEMBALIAN ───────────────────────────────────────────
+        // CATAT PENGEMBALIAN
         else if (c == '4') {
             printHeader("Catat Pengembalian");
 
@@ -504,10 +533,10 @@ static void menuLoans(BookRepository& bookRepo,
 
             bool late = loanOpt->isOverdue();
             std::cout << "  ✓ Pengembalian pinjaman #" << loanId << " dicatat.\n";
-            if (late) std::cout << "  ⚠  Buku ini dikembalikan TERLAMBAT!\n";
+            if (late) std::cout << Color::RED << "  ⚠  Buku ini dikembalikan TERLAMBAT!" << Color::RESET << '\n';
         }
 
-        // ── RIWAYAT MEMBER ───────────────────────────────────────────────
+        // RIWAYAT MEMBER
         else if (c == '5') {
             int memberId = readInt("ID Member: ");
             if (memberId <= 0) { std::cout << "  ID tidak valid.\n"; continue; }
@@ -524,19 +553,20 @@ static void menuLoans(BookRepository& bookRepo,
     }
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  LOGIN
-// ════════════════════════════════════════════════════════════════════════════
 
 static bool doLogin() {
+    // Verifikasi kredensial admin — max 3 percobaan
     // Admin tunggal — kredensial hardcoded (bisa diganti DB di Week 3)
     // Password: admin123  →  hash: simpleHash("admin123")
     const std::string ADMIN_USER = "admin";
     const std::string ADMIN_HASH = simpleHash("admin123");
 
-    std::cout << "\n╔══════════════════════════════════════════╗\n"
+    std::cout << Color::BOLD << Color::BLUE
+              << "\n╔══════════════════════════════════════════╗\n"
               << "║     UGM Library — Admin Console v1.0    ║\n"
-              << "╚══════════════════════════════════════════╝\n\n";
+              << "╚══════════════════════════════════════════╝\n"
+              << Color::RESET << "\n";
 
     for (int attempt = 1; attempt <= 3; ++attempt) {
         std::string username, password;
@@ -557,11 +587,10 @@ static bool doLogin() {
     return false;
 }
 
-// ════════════════════════════════════════════════════════════════════════════
 //  MAIN MENU
-// ════════════════════════════════════════════════════════════════════════════
 
 int main() {
+    // Buat folder data jika belum ada
     std::filesystem::create_directories("data");
 
     BookRepository   bookRepo;
@@ -576,15 +605,15 @@ int main() {
     auto active  = loanRepo.findActiveLoans();
     auto overdue = loanRepo.findOverdue();
 
-    std::cout << "\n  [OK] Selamat datang, admin!\n"
+    std::cout << Color::GREEN << "\n  [OK] Selamat datang, admin!" << Color::RESET << "\n"
               << "  " << books.size()   << " buku  |  "
               << members.size()         << " member  |  "
               << active.size()          << " pinjaman aktif";
     if (!overdue.empty())
-        std::cout << "  |  ⚠  " << overdue.size() << " TERLAMBAT";
+        std::cout << Color::RED << "  |  ⚠  " << overdue.size() << " TERLAMBAT" << Color::RESET;
     std::cout << "\n";
 
-    // ── Main loop ────────────────────────────────────────────────────────
+    //Main loop
     while (true) {
         printHeader("Menu Utama");
         std::cout << "[1] Kelola Buku\n"

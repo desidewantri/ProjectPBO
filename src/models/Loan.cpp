@@ -10,18 +10,18 @@ Loan::Loan(int loanId, int bookId, int memberId,
     : loanId_(loanId), bookId_(bookId), memberId_(memberId),
       borrowDate_(borrowDate), dueDate_(dueDate), returned_(returned) {}
 
-int Loan::getLoanId() const   { return loanId_; }
-int Loan::getBookId() const   { return bookId_; }
+int Loan::getLoanId()   const { return loanId_; }
+int Loan::getBookId()   const { return bookId_; }
 int Loan::getMemberId() const { return memberId_; }
 std::string Loan::getBorrowDate() const { return borrowDate_; }
-std::string Loan::getDueDate() const    { return dueDate_; }
+std::string Loan::getDueDate()    const { return dueDate_; }
 bool Loan::isReturned() const { return returned_; }
 void Loan::setReturned(bool r) { returned_ = r; }
 
+// Cek keterlambatan dengan membandingkan dueDate_ dan tanggal hari ini
 bool Loan::isOverdue() const {
-    if (returned_) return false;
+    if (returned_) return false;  // sudah dikembalikan, tidak terlambat
 
-    // Compare dueDate_ (format: YYYY-MM-DD) with today
     time_t now = time(nullptr);
     tm* today = localtime(&now);
 
@@ -29,6 +29,7 @@ bool Loan::isOverdue() const {
     int tm_ = today->tm_mon + 1;
     int td = today->tm_mday;
 
+    // Parse format YYYY-MM-DD dari dueDate_
     int dy, dm, dd;
     sscanf(dueDate_.c_str(), "%d-%d-%d", &dy, &dm, &dd);
 
@@ -42,10 +43,12 @@ void Loan::returnBook() {
     returned_ = true;
 }
 
+// Dua loan sama jika loanId-nya sama
 bool Loan::operator==(const Loan& other) const {
     return loanId_ == other.loanId_;
 }
 
+// Tampilkan data loan dalam format kolom untuk tabel CLI
 std::ostream& operator<<(std::ostream& os, const Loan& l) {
     os << std::left
        << std::setw(6)  << l.loanId_

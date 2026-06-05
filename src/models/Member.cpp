@@ -10,15 +10,16 @@ Member::Member(int memberId, const std::string& name, const std::string& email,
 std::string Member::role() const { return "Member"; }
 
 int Member::getMemberId() const { return memberId_; }
-std::string Member::getName() const { return name_; }
+std::string Member::getName()  const { return name_; }
 std::string Member::getEmail() const { return email_; }
 
+// Pinjam buku — logika utama ada di LoanRepository
 bool Member::borrowBook(int bookId) {
-    // Logic will be handled by core engine via LoanRepository
     std::cout << "[Member:" << name_ << "] borrowBook(" << bookId << ") called\n";
     return true;
 }
 
+// Kembalikan buku — logika utama ada di LoanRepository
 bool Member::returnBook(int bookId) {
     std::cout << "[Member:" << name_ << "] returnBook(" << bookId << ") called\n";
     return true;
@@ -28,6 +29,7 @@ void Member::viewLoans() const {
     std::cout << "[Member:" << name_ << "] viewLoans() called\n";
 }
 
+// Tampilkan data member dalam format kolom untuk tabel CLI
 std::ostream& operator<<(std::ostream& os, const Member& m) {
     os << std::left
        << std::setw(6)  << m.memberId_

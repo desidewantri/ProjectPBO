@@ -4,9 +4,9 @@
 #include <iostream>
 #include <algorithm>
 
+// Inisialisasi: buat file CSV dengan header jika belum ada
 BookRepository::BookRepository(const std::string& fileName)
     : fileName_(fileName) {
-    // Ensure data directory and file exist
     std::ifstream test(fileName_);
     if (!test.good()) {
         std::ofstream create(fileName_);
@@ -14,6 +14,7 @@ BookRepository::BookRepository(const std::string& fileName)
     }
 }
 
+// Cari ID terbesar lalu tambah 1
 int BookRepository::nextId() const {
     auto all = listAll();
     if (all.empty()) return 1;
@@ -24,22 +25,19 @@ int BookRepository::nextId() const {
     return maxId + 1;
 }
 
+// Tambah buku baru ke akhir file CSV
 void BookRepository::save(const Book& book) {
     std::ofstream file(fileName_, std::ios::app);
-    if (!file) {
-        std::cerr << "Error: cannot open " << fileName_ << "\n";
-        return;
-    }
+    if (!file) { std::cerr << "Error: cannot open " << fileName_ << "\n"; return; }
     file << book.getId() << ","
          << csvEscape(book.getTitle()) << ","
          << csvEscape(book.getAuthor()) << ","
          << (book.isAvailable() ? "1" : "0") << "\n";
 }
 
+// Hapus buku: tulis ulang file tanpa buku yang dihapus
 void BookRepository::remove(int id) {
     auto all = listAll();
-
-    // Rewrite file without the removed book
     std::ofstream file(fileName_);
     file << "id,title,author,available\n";
     for (const auto& b : all) {
@@ -52,12 +50,14 @@ void BookRepository::remove(int id) {
     }
 }
 
+// Update buku: tulis ulang file, ganti baris yang id-nya cocok
 void BookRepository::update(const Book& book) {
     auto all = listAll();
     std::ofstream file(fileName_);
     file << "id,title,author,available\n";
     for (const auto& b : all) {
         if (b.getId() == book.getId()) {
+            // Tulis data yang sudah diupdate
             file << book.getId() << ","
                  << csvEscape(book.getTitle()) << ","
                  << csvEscape(book.getAuthor()) << ","
@@ -71,35 +71,37 @@ void BookRepository::update(const Book& book) {
     }
 }
 
+// Cari buku berdasarkan ID, return nullopt jika tidak ditemukan
 std::optional<Book> BookRepository::findById(int id) const {
-    auto all = listAll();
-    for (const auto& b : all) {
+    for (const auto& b : listAll()) {
         if (b.getId() == id) return b;
     }
     return std::nullopt;
 }
 
+// Baca semua buku dari file CSV, skip header
 std::vector<Book> BookRepository::listAll() const {
     std::vector<Book> books;
     std::ifstream file(fileName_);
     if (!file) return books;
 
     std::string line;
-    std::getline(file, line); // skip header
+    std::getline(file, line); // skip baris header
 
     while (std::getline(file, line)) {
         if (line.empty()) continue;
         auto tokens = csvSplit(line);
         if (tokens.size() < 4) continue;
-        int id          = std::stoi(tokens[0]);
+        int id         = std::stoi(tokens[0]);
         std::string title  = tokens[1];
         std::string author = tokens[2];
-        bool available  = tokens[3] == "1";
+        bool available = tokens[3] == "1";
         books.emplace_back(id, title, author, available);
     }
     return books;
 }
 
+// Filter buku yang statusnya tersedia
 std::vector<Book> BookRepository::findAvailable() const {
     auto all = listAll();
     std::vector<Book> result;
@@ -109,6 +111,7 @@ std::vector<Book> BookRepository::findAvailable() const {
     return result;
 }
 
+// Pencarian case-insensitive berdasarkan judul atau pengarang
 std::vector<Book> BookRepository::search(const std::string& keyword) const {
     auto all = listAll();
     std::vector<Book> result;

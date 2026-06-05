@@ -3,6 +3,7 @@
 #include <fstream>
 #include <iostream>
 
+// Inisialisasi: buat file CSV dengan header jika belum ada
 MemberRepository::MemberRepository(const std::string& fileName)
     : fileName_(fileName) {
     std::ifstream test(fileName_);
@@ -12,6 +13,7 @@ MemberRepository::MemberRepository(const std::string& fileName)
     }
 }
 
+// Cari ID terbesar lalu tambah 1
 int MemberRepository::nextId() const {
     auto all = listAll();
     if (all.empty()) return 1;
@@ -22,12 +24,10 @@ int MemberRepository::nextId() const {
     return maxId + 1;
 }
 
+// Tambah member baru ke akhir file CSV
 void MemberRepository::save(const Member& member) {
     std::ofstream file(fileName_, std::ios::app);
-    if (!file) {
-        std::cerr << "Error: cannot open " << fileName_ << "\n";
-        return;
-    }
+    if (!file) { std::cerr << "Error: cannot open " << fileName_ << "\n"; return; }
     file << member.getMemberId() << ","
          << csvEscape(member.getName()) << ","
          << csvEscape(member.getEmail()) << ","
@@ -35,6 +35,7 @@ void MemberRepository::save(const Member& member) {
          << member.getPasswordHash() << "\n";
 }
 
+// Hapus member: tulis ulang file tanpa member yang dihapus
 void MemberRepository::remove(int id) {
     auto all = listAll();
     std::ofstream file(fileName_);
@@ -50,6 +51,7 @@ void MemberRepository::remove(int id) {
     }
 }
 
+// Update member: tulis ulang file, ganti baris yang id-nya cocok
 void MemberRepository::update(const Member& member) {
     auto all = listAll();
     std::ofstream file(fileName_);
@@ -71,14 +73,15 @@ void MemberRepository::update(const Member& member) {
     }
 }
 
+// Cari member berdasarkan ID
 std::optional<Member> MemberRepository::findById(int id) const {
-    auto all = listAll();
-    for (const auto& m : all) {
+    for (const auto& m : listAll()) {
         if (m.getMemberId() == id) return m;
     }
     return std::nullopt;
 }
 
+// Baca semua member dari CSV, skip header
 std::vector<Member> MemberRepository::listAll() const {
     std::vector<Member> members;
     std::ifstream file(fileName_);

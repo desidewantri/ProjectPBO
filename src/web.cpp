@@ -230,6 +230,54 @@ static std::string booksTable(const std::vector<Book>& books,
     return t.str();
 }
 
+
+// ── Pagination helper ─────────────────────────────────────────────────────────
+// Potong vector sesuai halaman, return subset dan total halaman
+template<typename T>
+static std::vector<T> paginate(const std::vector<T>& items, int page, int perPage, int& totalPages) {
+    int total = static_cast<int>(items.size());
+    totalPages = (total + perPage - 1) / perPage;
+    if (page < 1) page = 1;
+    if (page > totalPages && totalPages > 0) page = totalPages;
+
+    int start = (page - 1) * perPage;
+    int end   = std::min(start + perPage, total);
+
+    if (start >= total) return {};
+    return std::vector<T>(items.begin() + start, items.begin() + end);
+}
+
+// Render tombol navigasi halaman
+static std::string paginationNav(int currentPage, int totalPages,
+                                  const std::string& baseUrl) {
+    if (totalPages <= 1) return "";
+    std::ostringstream nav;
+    nav << "<div style='display:flex;gap:0.4rem;margin-top:1rem;flex-wrap:wrap'>";
+
+    // Tombol prev
+    if (currentPage > 1)
+        nav << "<a href='" << baseUrl << "&page=" << (currentPage-1)
+            << "' class='btn btn-primary btn-sm'>← Prev</a>";
+
+    // Nomor halaman
+    for (int i = 1; i <= totalPages; i++) {
+        if (i == currentPage)
+            nav << "<span class='btn btn-primary btn-sm' "
+                << "style='background:#003f7f'>" << i << "</span>";
+        else
+            nav << "<a href='" << baseUrl << "&page=" << i
+                << "' class='btn btn-primary btn-sm'>" << i << "</a>";
+    }
+
+    // Tombol next
+    if (currentPage < totalPages)
+        nav << "<a href='" << baseUrl << "&page=" << (currentPage+1)
+            << "' class='btn btn-primary btn-sm'>Next →</a>";
+
+    nav << "</div>";
+    return nav.str();
+}
+
 // ════════════════════════════════════════════════════════════════════════════
 //  GET /
 // ════════════════════════════════════════════════════════════════════════════
@@ -239,8 +287,21 @@ static void handleIndex(const httplib::Request& req,
     std::string memberId = req.get_param_value("mid");
     std::string msg      = req.get_param_value("msg");
     std::string msgType  = req.get_param_value("type");
+    std::string pageStr  = req.get_param_value("page");
 
-    auto books = bookRepo.listAll();
+    // Pagination: 10 buku per halaman
+    int currentPage = pageStr.empty() ? 1 : std::stoi(pageStr);
+    const int PER_PAGE = 10;
+
+    auto allBooks = bookRepo.listAll();
+
+    // Hitung statistik dari semua buku
+    int available = 0;
+    for (const auto& b : allBooks) if (b.isAvailable()) available++;
+
+    // Ambil subset buku untuk halaman ini
+    int totalPages = 1;
+    auto books = paginate(allBooks, currentPage, PER_PAGE, totalPages);
 
     std::ostringstream body;
 
@@ -255,18 +316,21 @@ static void handleIndex(const httplib::Request& req,
     body << searchForm("", memberId);
 
     // Statistik
-    int available = 0;
-    for (const auto& b : books) if (b.isAvailable()) available++;
     body << "<div style='margin-bottom:1rem;color:#4a5568;font-size:0.9rem'>"
-         << "Total: <strong>" << books.size() << "</strong> buku | "
+         << "Total: <strong>" << allBooks.size() << "</strong> buku | "
          << "Tersedia: <strong>" << available << "</strong> | "
-         << "Dipinjam: <strong>" << (books.size() - available) << "</strong>"
+         << "Dipinjam: <strong>" << (allBooks.size() - available) << "</strong>"
+         << " &nbsp;|&nbsp; Halaman " << currentPage << " dari " << totalPages
          << "</div>";
 
     body << "<div class='card'>"
          << "<div class='card-header'>📖 Daftar Buku</div>"
          << booksTable(books, memberId)
          << "</div>";
+
+    // Navigasi halaman — base URL menyertakan mid jika ada
+    std::string baseUrl = "/?mid=" + memberId;
+    body << paginationNav(currentPage, totalPages, baseUrl);
 
     res.set_content(page("Beranda", body.str(), memberId), "text/html; charset=utf-8");
 }
@@ -285,15 +349,24 @@ static void handleSearch(const httplib::Request& req,
         return;
     }
 
-    auto results = bookRepo.search(q);
+    auto allResults = bookRepo.search(q);
+    std::string pageStr = req.get_param_value("page");
+    int currentPage = pageStr.empty() ? 1 : std::stoi(pageStr);
+    const int PER_PAGE = 10;
+    int totalPages = 1;
+    auto results = paginate(allResults, currentPage, PER_PAGE, totalPages);
 
     std::ostringstream body;
     body << searchForm(q, memberId);
     body << "<div class='card'>"
          << "<div class='card-header'>🔍 Hasil pencarian: \"" << esc(q) << "\" ("
-         << results.size() << " ditemukan)</div>"
+         << allResults.size() << " ditemukan, halaman " << currentPage << "/" << totalPages << ")</div>"
          << booksTable(results, memberId)
          << "</div>";
+
+    // Navigasi halaman pencarian
+    std::string baseUrl = "/search?q=" + q + "&mid=" + memberId;
+    body << paginationNav(currentPage, totalPages, baseUrl);
 
     res.set_content(page("Pencarian", body.str(), memberId), "text/html; charset=utf-8");
 }
@@ -538,14 +611,17 @@ static void handleMe(const httplib::Request& req,
 //  MAIN
 // ════════════════════════════════════════════════════════════════════════════
 int main() {
+    // Buat folder data jika belum ada
     std::filesystem::create_directories("data");
 
+    // Inisialisasi repository — masing-masing membaca file CSV-nya
     BookRepository   bookRepo;
     MemberRepository memberRepo;
     LoanRepository   loanRepo;
 
     httplib::Server svr;
 
+    // Daftarkan semua route ke HTTP server
     // GET /
     svr.Get("/", [&](const httplib::Request& req, httplib::Response& res) {
         handleIndex(req, res, bookRepo);

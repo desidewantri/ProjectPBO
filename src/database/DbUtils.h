@@ -6,7 +6,7 @@
 #include <iomanip>
 #include <ctime>
 
-// Simple CSV helper: split a line by comma
+// Pecah satu baris CSV menjadi token berdasarkan koma
 inline std::vector<std::string> csvSplit(const std::string& line) {
     std::vector<std::string> tokens;
     std::stringstream ss(line);
@@ -17,16 +17,15 @@ inline std::vector<std::string> csvSplit(const std::string& line) {
     return tokens;
 }
 
-// Escape commas in a field
+// Bungkus field dengan tanda kutip jika mengandung koma
 inline std::string csvEscape(const std::string& s) {
-    // Wrap in quotes if contains comma
     if (s.find(',') != std::string::npos) {
         return "\"" + s + "\"";
     }
     return s;
 }
 
-// Format tm* to YYYY-MM-DD string
+// Format struct tm menjadi string YYYY-MM-DD
 inline std::string formatDate(const tm* t) {
     std::ostringstream oss;
     oss << (t->tm_year + 1900) << "-"
@@ -35,14 +34,14 @@ inline std::string formatDate(const tm* t) {
     return oss.str();
 }
 
-// Get today's date as YYYY-MM-DD
+// Ambil tanggal hari ini dalam format YYYY-MM-DD
 inline std::string todayDate() {
     time_t now = time(nullptr);
     tm* t = localtime(&now);
     return formatDate(t);
 }
 
-// Get due date N days from today
+// Hitung tanggal N hari dari sekarang (default 14 hari)
 inline std::string dueDateFromToday(int days = 14) {
     time_t now = time(nullptr);
     now += static_cast<time_t>(days) * 86400LL;
