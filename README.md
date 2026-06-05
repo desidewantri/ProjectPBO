@@ -48,7 +48,8 @@ ProjectPBO/
 
 ## UML Class Diagram
 
-![UML Diagram](uml.png)
+
+<img width="1160" height="784" alt="UML_CLASS DIAGRAM" src="https://github.com/user-attachments/assets/7861e64d-d161-48aa-ab86-38ec84bce331" />
 
 ---
 
