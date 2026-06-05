@@ -1,0 +1,7 @@
+build/
+*.exe
+*.o
+seed
+admin
+web
+data/
