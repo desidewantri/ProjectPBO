@@ -7,9 +7,8 @@
 ## Identitas
 | Field | Value |
 |-------|-------|
-| Nama | *(isi nama)* |
-| NIM | *(isi NIM)* |
-| Kelas | *(isi kelas)* |
+| Nama | *(Desi  D Simamora)* |
+| NIM | *(23/514990/TK/56564)* |
 
 ---
 
