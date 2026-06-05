@@ -160,22 +160,21 @@ make web     # build web server
 ![CLI Login](screenshots/cli_login.png)
 <img width="1087" height="270" alt="SS_CLI_LoginAdmin" src="https://github.com/user-attachments/assets/13ca7767-de0f-4ce4-8b31-efde9ea55d03" />
 
-
 ![CLI Buku](screenshots/cli_books.png)
-<img width="966" height="1025" alt="SS_CLI_KelolaBuku" src="https://github.com/user-attachments/assets/57fb9ac0-920d-486b-8d5b-5c17386108b1" />
+<img width="1031" height="933" alt="SS_CLI_KelolaBuku" src="https://github.com/user-attachments/assets/133a9155-d2db-4896-862d-7c31a88130a2" />
 
 ![CLI Pinjaman](screenshots/cli_loans.png)
-<img width="962" height="1087" alt="SS_CLI_KelolaPeminjaman" src="https://github.com/user-attachments/assets/390b4567-d2a1-4b55-875b-ac25a72bbf58" />
+<img width="1072" height="1092" alt="SS_CLI_KelolaPeminjaman" src="https://github.com/user-attachments/assets/bda1edee-2214-4776-91df-3fb0f63bb7a3" />
 
 ### User Web
 ![Web Beranda](screenshots/web_home.png)
-<img width="1918" height="1080" alt="SS_WEB_Beranda" src="https://github.com/user-attachments/assets/c68c4343-e742-4aac-a448-a1157c1c06a4" />
+<img width="1918" height="1087" alt="SS_WEB_Beranda" src="https://github.com/user-attachments/assets/0cfa4094-e7b0-4bef-a67a-83d248a7de0d" />
 
 ![Web Pencarian](screenshots/web_search.png)
-<img width="1915" height="1067" alt="SS_WEB_Pencarian" src="https://github.com/user-attachments/assets/5b9a2918-ef8b-4272-b538-bd7192382ad4" />
+<img width="1918" height="1082" alt="SS_WEB_Pencarian" src="https://github.com/user-attachments/assets/5b709114-eaef-4394-a947-d68ba8c4ffd6" />
 
 ![Web Pinjaman Saya](screenshots/web_me.png)
-<img width="1918" height="1077" alt="SS_WEB_PinjamanSaya" src="https://github.com/user-attachments/assets/ed34d959-a4be-4a8c-9d15-fed88a6268b1" />
+<img width="1917" height="1086" alt="SS_WEB_PinjamanSaya" src="https://github.com/user-attachments/assets/05fcb1d0-13e0-4e62-bc86-c28ba4939af3" />
 
 ---
 
